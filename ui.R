@@ -23,7 +23,7 @@ shinyUI(dashboardPage(
                        tabPanel("Remove",
                                 fluidRow(
                                   column(8, selectInput('removeTeamName', "Select A Team:", choices = c(''))), 
-                                  column(4, actionButton('teamNameEnter', label = 'Remove', icon = icon('times')))
+                                  column(4, actionButton('teamNameRemove', label = 'Remove', icon = icon('times')))
                                 )
                        )
                 )

@@ -21,20 +21,28 @@ shinyServer(function(input, output, session) {
   ##---------------------------------------------------------------------------
   ## CUD: Create, Update, Delete
   ##---------------------------------------------------------------------------
-  observeEvent(input$teamNameEnter, 
-               function() {
-                 if (!(input$teamName %in% teams$Team)) {
-                   # Team name is new; add it to the data frame
-                   teams <- rbind(teams, c(input$teamName, 1500))
-                   save(teams, file = 'elo.RData')
-                   
-                   # Update all teams-dependent shows
-                   values$teams <- teams
-                   
-                   # Clear the input field
-                   updateTextInput(session, inputId = 'teamName', value = '')
-                 }
-               })
+  observeEvent(input$teamNameEnter, {
+    if (!(input$teamName %in% teams$Team)) {
+      # Team name is new; add it to the data frame
+      teams <- rbind(teams, c(input$teamName, 1500))
+      save(teams, file = 'elo.RData')
+      
+      # Update all teams-dependent shows
+      values$teams <- teams
+      
+      # Clear the input field
+      updateTextInput(session, inputId = 'teamName', value = '')
+    }
+  })
+  
+  observeEvent(input$teamNameRemove, {
+    # Remove team name & save
+    teams <- teams %>% filter(Team != input$removeTeamName)
+    save(teams, file = 'elo.RData')
+    
+    # Update all teams-dependent shows
+    values$teams <- teams
+  })
   
   observeEvent(values$teams, {
     updateSelectInput(session, inputId = 'removeTeamName', choices = values$teams$Team)
