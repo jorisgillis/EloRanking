@@ -17,6 +17,7 @@ shinyServer(function(input, output, session) {
   ##---------------------------------------------------------------------------
   values <- reactiveValues(teams = teams)
   
+  
   ##---------------------------------------------------------------------------
   ## CUD: Create, Update, Delete
   ##---------------------------------------------------------------------------
@@ -34,6 +35,10 @@ shinyServer(function(input, output, session) {
                    updateTextInput(session, inputId = 'teamName', value = '')
                  }
                })
+  
+  observeEvent(values$teams, {
+    updateSelectInput(session, inputId = 'removeTeamName', choices = values$teams$Team)
+  })
   
   ##---------------------------------------------------------------------------
   ## SHOWING DATA

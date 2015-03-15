@@ -13,11 +13,19 @@ shinyUI(dashboardPage(
       tabItem(tabName = 'dataEntry',
               h4('Data Entry'),
               fluidRow(
-                box(width = 12, status = 'primary', title = 'Manage Teams', 
-                    fluidRow(
-                      column(8, textInput('teamName', "Team name:")), 
-                      column(4, actionButton('teamNameEnter', label = 'Add', icon = icon('check')))
-                    )
+                tabBox(width = 12, status = 'primary', title = 'Manage League', id = 'leagueManagement',
+                       tabPanel("Add",
+                         fluidRow(
+                           column(8, textInput('teamName', "Team name:")), 
+                           column(4, actionButton('teamNameEnter', label = 'Add', icon = icon('check')))
+                         )
+                       ), 
+                       tabPanel("Remove",
+                                fluidRow(
+                                  column(8, selectInput('removeTeamName', "Select A Team:", choices = c(''))), 
+                                  column(4, actionButton('teamNameEnter', label = 'Remove', icon = icon('times')))
+                                )
+                       )
                 )
               ),
               fluidRow(
