@@ -13,7 +13,7 @@ shinyUI(dashboardPage(
       tabItem(tabName = 'dataEntry',
               h4('Data Entry'),
               fluidRow(
-                box(width = 12, solidHeader = T, status = 'primary', title = 'Manage Teams', 
+                box(width = 12, status = 'primary', title = 'Manage Teams', 
                     fluidRow(
                       column(8, textInput('teamName', "Team name:")), 
                       column(4, actionButton('teamNameEnter', label = 'Add', icon = icon('check')))
@@ -21,14 +21,14 @@ shinyUI(dashboardPage(
                 )
               ),
               fluidRow(
-                box(width = 12, status = 'success', title = 'Teams',
+                box(width = 12, status = 'primary', title = 'Teams',
                     fluidRow(
                       column(12, dataTableOutput('teamsTable'))
                     )
                 )
               ),
               fluidRow(
-                box(width = 12, solidHeader = T, status = 'primary', title = 'Enter players', p("Players"))
+                box(width = 12, status = 'primary', title = 'Enter players', p("Players"))
               )
       ),
       tabItem(tabName = 'eloRatings',
