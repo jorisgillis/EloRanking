@@ -5,14 +5,14 @@ be tracked over time and be used to predict the outcome of games.
 
 ## Database setup
 This Shiny app uses a SQLite3 database. Creating a SQLite3 database is as simple as running
-``
+```
 sqlite3 mydb.sqlite3
-``
+```
 
 The schema of the database is constructed as follows:
-``
+```
 CREATE TABLE teams (
   id INTEGER PRIMARY KEY,
   name VARCHAR(255)
 );
-``
+```
