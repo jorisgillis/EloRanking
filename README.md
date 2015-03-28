@@ -13,6 +13,15 @@ The schema of the database is constructed as follows:
 ```
 CREATE TABLE teams (
   id INTEGER PRIMARY KEY,
-  name VARCHAR(255)
+  name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE games (
+  id INTEGER PRIMARY KEY,
+  home_team INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+  away_team INTEGER NOT NULL REFERNECES teams(id) ON DELETE CASCADE,
+  home_score INTEGER NOT NULL,
+  away_score INTEGER NOT NULL,
+  CONSTRAINT different_team CHECK (home_team <> away_team)
 );
 ```
