@@ -5,7 +5,7 @@ shinyUI(dashboardPage(
   dashboardSidebar(
     sidebarMenu(
       menuItem('Teams', tabName = 'teams', icon = icon('keyboard-o')),
-      menuItem('Players', tabName = 'players', icon = icon('keyboard-o')),
+      menuItem('Games', tabName = 'games', icon = icon('keyboard-o')),
       menuItem('ELO Ratings', tabName = 'eloRatings', icon = icon('bar-chart-o'))
     )
   ),
@@ -36,6 +36,27 @@ shinyUI(dashboardPage(
                     )
                 )
               )
+      ),
+      tabItem(
+        tabName = 'games',
+        h4("Games"),
+        fluidRow(
+          tabBox(
+            width = 12, status = 'primary', title = "Manage games", id = "gamesManagement",
+            tabPanel("Add", 
+                     fluidRow(
+                       column(3, selectInput("homeTeam", "Home Team: ", choices = c(''))),
+                       column(2, textInput("homeTeamScore", "", value = "0")),
+                       column(2, textInput("awayTeamScore", "", value = "0")),
+                       column(3, selectInput("awayTeam", "Away Team: ", choices = c(''))),
+                       column(2, actionButton("enterGame", label = "Add", icon = icon("check")))
+                     )
+            )
+          )
+        ),
+        fluidRow(
+          box(width = 12, status = 'primary', title = "Games", dataTableOutput('gamesTable'))
+        )
       ),
       tabItem(tabName = 'players',
               h4('Players'),

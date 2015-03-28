@@ -9,11 +9,22 @@ conn    <- dbConnect(drv, db_name)
 ##-----------------------------------------------------------------------------
 ## Getting teams
 fetchTeams <- function() {
-  dbReadTable(conn, "teams")
+  dbReadTable(conn, "teams") %>% arrange(name)
 }
 
 fetchTeamNames <- function() {
   dbReadTable(conn, "teams") %>% select(-id) %>% arrange(name)
+}
+
+fetchGames <- function() {
+  df    <- dbReadTable(conn, "games")
+  teams <- fetchTeams()
+  df <- left_join(
+    left_join(df, teams, by = c('home_team' = 'id')),
+    teams, by = c('away_team' = 'id')
+  )
+  colnames(df) <- c('id', 'home_team_id', 'away_team_id', 'home_score', 'away_score', 'home_team_name', 'away_team_name')
+  df
 }
 
 ##-----------------------------------------------------------------------------
@@ -22,11 +33,7 @@ fetchTeamNames <- function() {
 ## Add a team
 addTeam <- function(team_name) {
   df <- fetchTeams()
-  if (dim(df)[1] > 0) {
-    id <- max(df$id) + 1
-  } else {
-    id <- 1
-  }
+  id <- getID(df)
   dbWriteTable(conn, 'teams', data.frame(id = id, name = team_name), append = T)
 }
 
@@ -34,3 +41,27 @@ addTeam <- function(team_name) {
 removeTeam <- function(team_name) {
   dbWriteTable(conn, 'teams', (fetchTeams() %>% filter(name != team_name)), overwrite = T)
 }
+
+
+## Add Game
+addGame <- function(home_team, away_team, home_score, away_score) {
+  df <- dbReadTable(conn, "games")
+  id <- getID(df)
+  dbWriteTable(conn, "games", 
+               data.frame(id = id, home_team = home_team, away_team = away_team, home_score = home_score, away_score = away_score),
+               append = T)
+}
+
+
+
+##-----------------------------------------------------------------------------
+## UTILITY
+##-----------------------------------------------------------------------------
+getID <- function(df) {
+  if (dim(df)[1] > 0) {
+    id <- max(df$id) + 1
+  } else {
+    id <- 1
+  }
+}
+
