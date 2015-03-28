@@ -5,47 +5,47 @@ library(dplyr)
 
 ##-----------------------------------------------------------------------------
 ## LOADING DATA
-## Loads the \code{elo.RData} file which contains:
+## Loads the \code{mydb.sqlite3} database file which contains:
 ## - teams: data frame containing each team with its ELO ranking
 ##-----------------------------------------------------------------------------
-load('elo.RData')
+source('db.R')
 
+teams <- fetchTeamNames()
 
 shinyServer(function(input, output, session) {
   ##---------------------------------------------------------------------------
   ## ACCESSING DATA
   ##---------------------------------------------------------------------------
-  values <- reactiveValues(teams = teams)
+  values <- reactiveValues(teams = fetchTeamNames())
   
   
   ##---------------------------------------------------------------------------
-  ## CUD: Create, Update, Delete
+  ## CRUD: Create, Read, Update & Delete
   ##---------------------------------------------------------------------------
   observeEvent(input$teamNameEnter, {
-    if (!(input$teamName %in% teams$Team)) {
+    if (!(input$teamName %in% teams$name)) {
       # Team name is new; add it to the data frame
-      teams <- rbind(teams, c(input$teamName, 1500))
-      save(teams, file = 'elo.RData')
+      addTeam(input$teamName)
       
       # Update all teams-dependent shows
-      values$teams <- teams
-      
-      # Clear the input field
-      updateTextInput(session, inputId = 'teamName', value = '')
+      teams <- fetchTeamNames()
+      values$teams = teams
     }
+    # Clear the input field
+    updateTextInput(session, inputId = 'teamName', value = '')
   })
   
   observeEvent(input$teamNameRemove, {
     # Remove team name & save
-    teams <- teams %>% filter(Team != input$removeTeamName)
-    save(teams, file = 'elo.RData')
+    removeTeam(input$removeTeamName)
     
     # Update all teams-dependent shows
-    values$teams <- teams
+    teams <- fetchTeamNames()
+    values$teams = teams
   })
   
   observeEvent(values$teams, {
-    updateSelectInput(session, inputId = 'removeTeamName', choices = values$teams$Team)
+    updateSelectInput(session, inputId = 'removeTeamName', choices = values$teams$name)
   })
   
   ##---------------------------------------------------------------------------
