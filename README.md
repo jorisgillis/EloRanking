@@ -19,7 +19,7 @@ CREATE TABLE teams (
 CREATE TABLE games (
   id INTEGER PRIMARY KEY,
   home_team INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-  away_team INTEGER NOT NULL REFERNECES teams(id) ON DELETE CASCADE,
+  away_team INTEGER NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
   home_score INTEGER NOT NULL,
   away_score INTEGER NOT NULL,
   CONSTRAINT different_team CHECK (home_team <> away_team)
