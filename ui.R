@@ -16,10 +16,10 @@ shinyUI(dashboardPage(
               fluidRow(
                 tabBox(width = 12, status = 'primary', title = 'Manage League', id = 'leagueManagement',
                        tabPanel("Add",
-                         fluidRow(
-                           column(8, textInput('teamName', "Team name:")), 
-                           column(4, actionButton('teamNameEnter', label = 'Add', icon = icon('check')))
-                         )
+                                fluidRow(
+                                  column(8, textInput('teamName', "Team name:")), 
+                                  column(4, actionButton('teamNameEnter', label = 'Add', icon = icon('check')))
+                                )
                        ), 
                        tabPanel("Remove",
                                 fluidRow(
@@ -45,10 +45,10 @@ shinyUI(dashboardPage(
             width = 12, status = 'primary', title = "Manage games", id = "gamesManagement",
             tabPanel("Add", 
                      fluidRow(
-                       column(3, selectInput("homeTeam", "Home Team: ", choices = c(''))),
+                       column(3, selectizeInput("homeTeam", "Home Team: ", choices = c(''))),
                        column(2, textInput("homeTeamScore", "", value = "0")),
                        column(2, textInput("awayTeamScore", "", value = "0")),
-                       column(3, selectInput("awayTeam", "Away Team: ", choices = c(''))),
+                       column(3, selectizeInput("awayTeam", "Away Team: ", choices = c(''))),
                        column(2, actionButton("enterGame", label = "Add", icon = icon("check")))
                      )
             )
@@ -85,7 +85,18 @@ shinyUI(dashboardPage(
               )
       ),
       tabItem(tabName = 'eloRatings',
-              h4('ELO Ratings')
+              h4('ELO Ratings'),
+              box(width = 12, status = 'success', title = "Odds", 
+                  fluidRow(
+                    column(6, selectizeInput("oddsHomeTeam", "Home Team: ", choices = c(''))),
+                    column(6, selectizeInput("oddsAwayTeam", "Away Team: ", choices = c('')))
+                  ),
+                  fluidRow(
+                    column(6, h4(textOutput("computedOddsHome"))),
+                    column(6, h4(textOutput("computedOddsAway")))
+                  )
+              ),
+              box(width = 12, status = 'danger', title = "Current Elo Rankings", plotOutput('currentRanking'))
       )
     )
   )
