@@ -12,16 +12,18 @@ library(ggplot2)
 source('db.R')
 source('elo.R')
 
-teams <- fetchTeams()
-games <- fetchGames()
+teams  <- fetchTeams()
+games  <- fetchGames()
+rounds <- fetchRounds()
 
 shinyServer(function(input, output, session) {
   ##---------------------------------------------------------------------------
   ## ACCESSING DATA
   ##---------------------------------------------------------------------------
   values <- reactiveValues(
-    teams = fetchTeams(),
-    games = fetchGames()
+    teams  = fetchTeams(),
+    games  = fetchGames(),
+    rounds = fetchRounds()
   )
   
   
@@ -66,15 +68,28 @@ shinyServer(function(input, output, session) {
         !is.na(as.integer(input$homeTeamScore)) & 
         !is.na(as.integer(input$awayTeamScore))) {
       # Team name is new; add it to the data frame
-      addGame(input$homeTeam, input$awayTeam, input$homeTeamScore, input$awayTeamScore)
+      addGame(input$roundNumber, input$homeTeam, input$awayTeam, input$homeTeamScore, input$awayTeamScore)
       
       # Update all teams-dependent shows
       games <- fetchGames()
       values$games = games
     }
     # Clear the input fields
-    updateTextInput(session, inputId = 'homeTeamScore', value = '')
-    updateTextInput(session, inputId = 'awayTeamScore', value = '')
+    updateTextInput(session, inputId = "homeTeamScore", value = '0')
+    updateTextInput(session, inputId = "awayTeamScore", value = '0')
+  })
+  
+  observeEvent(input$enterRound, {
+    if (!(input$roundName %in% rounds$name)) {
+      addRound(input$roundName)
+      values$rounds <- fetchRounds()
+    }
+    updateTextInput(session, inputId = "roundName", value = "")
+  })
+  
+  observeEvent(values$rounds, {
+    r <- values$rounds %>% arrange(desc(name))
+    updateSelectInput(session, inputId = 'roundNumber', choices = setNames(r$id, r$name))
   })
   
   ##---------------------------------------------------------------------------
@@ -92,8 +107,17 @@ shinyServer(function(input, output, session) {
   ))
   
   output$gamesTable <- renderDataTable({
-    df <- values$games %>% select(home_team_name, home_score, away_score, away_team_name)
-    colnames(df) <- c("Home Team", "Home Score", "Away Score", "Away Team")
+    df <- values$games %>% select(round_name, home_team_name, home_score, away_score, away_team_name)
+    colnames(df) <- c("Round", "Home Team", "Home Score", "Away Score", "Away Team")
+    df
+  }, 
+  options = list(
+    pageLength= 24
+  ))
+  
+  output$roundsTable <- renderDataTable({
+    df <- values$rounds %>% select(-id)
+    colnames(df) <- c("Round Name")
     df
   }, 
   options = list(
@@ -107,16 +131,26 @@ shinyServer(function(input, output, session) {
   ## PLOTTING
   ##---------------------------------------------------------------------------
   output$currentRanking <- renderPlot({
+    # Getting the elo ratings
     elo_ranking <- left_join(
       computeElo(values$teams, values$games),
       teams, by = c('team' = 'id')
-    ) %>% arrange(elo)
-    elo_ranking$name <- factor(elo_ranking$name, levels = elo_ranking$name)
-    ggplot(elo_ranking, aes(name, elo, colour = factor(1))) +
-      geom_point() +
-      scale_colour_manual('', values = c('#006837')) + 
-      scale_y_continuous("Elo Ranking", limits = c(1000, 2000), breaks = seq(1000, 2000, 50)) + xlab("") +
-      coord_flip() + theme_bw() + theme(legend.position = 'none', axis.text.x = element_text(angle = 90))
+    )
+    elo_ranking$name  <- factor(elo_ranking$name)
+    
+    # Colors: interpolate because there are usually more teams than colors in a given palette
+    colors <- RColorBrewer::brewer.pal(8, name = 'Set1')
+    colors <- colorRampPalette(colors)(dim(teams)[1])
+    
+    # Shapes: create 6 equal size groups, based on ranking
+    # WIP last_elo <- tail(elo_ranking, n = dim(teams)[1]) %>% arrange(elo)
+    
+    ggplot(elo_ranking, aes(as.integer(round), elo, colour = name)) +
+      geom_point() + geom_line() +
+      scale_colour_manual("Teams", values = colors) + 
+      scale_x_discrete("Round", labels = levels(elo_ranking$round)) +
+      scale_y_continuous("Elo Ranking", limits = c(1000, 2000), breaks = seq(1000, 2000, 50)) + 
+      theme_bw() + theme(axis.text.x = element_text(angle = 90))
   })
   
   output$computedOddsHome <- renderText({
@@ -124,7 +158,7 @@ shinyServer(function(input, output, session) {
     elo_home    <- elo_ranking[elo_ranking$team == input$oddsHomeTeam, 'elo']
     elo_away    <- elo_ranking[elo_ranking$team == input$oddsAwayTeam, 'elo']
     
-    round(winningOdds(elo_home, elo_away), 2)
+    tail(round(winningOdds(elo_home, elo_away), 2), 1)
   })
   
   output$computedOddsAway <- renderText({
@@ -132,6 +166,6 @@ shinyServer(function(input, output, session) {
     elo_home    <- elo_ranking[elo_ranking$team == input$oddsHomeTeam, 'elo']
     elo_away    <- elo_ranking[elo_ranking$team == input$oddsAwayTeam, 'elo']
     
-    round(winningOdds(elo_away, elo_home), 2)
+    tail(round(winningOdds(elo_away, elo_home), 2), 1)
   })
 })

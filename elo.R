@@ -37,14 +37,20 @@ winningOdds <- function(elo1, elo2) {
 ##-----------------------------------------------------------------------------
 ## Competition
 computeElo <- function(teams, games) {
-  elo <- data.frame(team = unique(teams$id), elo = 1500)
-  for (i in 1:dim(games)[1]) {
-    game <- games[i,]
-    new_elo <- updateElo(elo[elo$team == game$home_team_id, 'elo'], 
-                         elo[elo$team == game$away_team_id, 'elo'], 
-                         game$home_score, game$away_score)
-    elo[elo$team == game$home_team_id, 'elo'] <- new_elo[1]
-    elo[elo$team == game$away_team_id, 'elo'] <- new_elo[2]
+  elo         <- data.frame(team = unique(teams$id), round = 'Start', elo = 1500)
+  round_names <- unique(games$round_name)
+  running_elo <- elo[,c('team', 'elo')]
+  for (round_name in round_names) {
+    round_games <- filter(games, round_name == round_name)
+    for (i in 1:dim(round_games)[1]) {
+      game    <- round_games[i,]
+      new_elo <- updateElo(running_elo[running_elo$team == game$home_team_id, 'elo'], 
+                           running_elo[running_elo$team == game$away_team_id, 'elo'], 
+                           game$home_score, game$away_score)
+      running_elo[running_elo$team == game$home_team_id, 'elo'] <- new_elo[1]
+      running_elo[running_elo$team == game$away_team_id, 'elo'] <- new_elo[2]
+    }
+    elo <- rbind(elo, cbind(running_elo, round = round_name))
   }
   elo
 }

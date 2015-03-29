@@ -43,14 +43,26 @@ shinyUI(dashboardPage(
         fluidRow(
           tabBox(
             width = 12, status = 'primary', title = "Manage games", id = "gamesManagement",
-            tabPanel("Add", 
-                     fluidRow(
-                       column(3, selectizeInput("homeTeam", "Home Team: ", choices = c(''))),
-                       column(2, textInput("homeTeamScore", "", value = "0")),
-                       column(2, textInput("awayTeamScore", "", value = "0")),
-                       column(3, selectizeInput("awayTeam", "Away Team: ", choices = c(''))),
-                       column(2, actionButton("enterGame", label = "Add", icon = icon("check")))
-                     )
+            tabPanel(
+              "Add Game",
+              fluidRow(column(12, selectizeInput("roundNumber", "Round", choices = c('')))),
+              fluidRow(
+                column(3, selectizeInput("homeTeam", "Home Team: ", choices = c(''))),
+                column(2, textInput("homeTeamScore", "", value = "0")),
+                column(2, textInput("awayTeamScore", "", value = "0")),
+                column(3, selectizeInput("awayTeam", "Away Team: ", choices = c(''))),
+                column(2, actionButton("enterGame", label = "Add", icon = icon("check")))
+              )
+            ),
+            tabPanel(
+              "Add Game Round",
+              fluidRow(
+                column(8, textInput("roundName", "Round: ", value = "")),
+                column(4, actionButton("enterRound", "Add", icon = icon("check")))
+              ),
+              fluidRow(
+                column(12, dataTableOutput("roundsTable"))
+              )
             )
           )
         ),
@@ -96,7 +108,7 @@ shinyUI(dashboardPage(
                     column(6, h4(textOutput("computedOddsAway")))
                   )
               ),
-              box(width = 12, status = 'danger', title = "Current Elo Rankings", plotOutput('currentRanking'))
+              box(width = 12, status = 'danger', title = "Current Elo Rankings", plotOutput('currentRanking', height = 500))
       )
     )
   )
